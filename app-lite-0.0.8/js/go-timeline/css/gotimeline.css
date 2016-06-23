@@ -1,0 +1,143 @@
+ html, body {
+	height: 100%;
+	margin: 0px;
+	
+}
+body{
+overflow:hidden;/* good to keep mobile screens calm*/
+	/*overflow-y:scroll;*/
+	margin:0;
+}
+ 
+
+.anim_container {
+	position: absolute;
+	margin: 0px 0px 0px 0px !important;
+	padding: 0px 0px 0px 0px !important;
+	width: 100%;
+	left: 0%;
+	height: 240px;
+	max-height:400px;
+	top: 200px;
+	overflow: hidden;
+	background-color:#eee;
+}
+#timeline_object {
+	position: absolute;
+	left: 0%;
+	width: 100%;
+	height: 100%;
+	top: 0%;
+ }
+#timeline_table table  {
+	border:none;
+	border-collapse:collapse;
+    border-spacing: 0;
+}
+#timeline_table  tr  {
+	 
+}
+#timeline_table   td {
+	border:none;
+	border-collapse:collapse;
+}
+
+.timeline_control_button {
+	width: 100%;
+	height: 25px;
+}
+.go_line {
+	float: left;
+	width: 1px;
+	height: 10px;
+	background: #aaa;
+}
+ 
+
+.tick_row{
+	background-color:#fff;
+	border-top:1px solid #000;
+	height:10px;
+	color:#ccc;
+}
+.date_row{
+	background-color:#fff;
+	height:30px;
+	color:#ccc;
+}
+.go_date{
+	
+}
+.go_tick{
+	border-top:1px solid #bbb;
+}
+/*----- timeline_item  event css*/
+.event_row{
+	background-color:#eee;
+	height:200px;
+}
+.timeline_td {
+	 text-align:center !important;
+}
+.timeline_data{
+	min-width:10px;
+}
+.timeline_event{
+	position:relative;
+	text-align:center;
+	xxxborder:solid 1px red;
+	min-height:150px;
+	border:solid 1px #bbb;
+	border-radius:6px;
+	padding:3px 3px 3px 3px ;
+	width:80%;
+	background-color:#fff;
+	
+}
+.event_name{
+	font-weight:bold;
+	xxborder:solid 1px blue;
+	 position: absolute;
+     top: 10%;
+     left: 0%;
+     margin-left:10%;
+}
+.event_description{
+	font-style:italic;
+	 position: absolute;
+     top: 25%;
+     left: 0%; 
+	margin-left:10%;
+}
+.event_img{
+	 position: absolute;
+     top: 45%; 
+     left: 0%;
+	 width:100%;
+	 height:100%;
+	 min-width:100%;
+	 min-height:100%; 
+	 max-width:100%;
+	 max-height:100%; 
+	 background-repeat:no-repeat;
+	 xxborder:solid 1px green;
+	 margin-left:10%;
+}
+.event_btn{
+	overflow:hidden;
+	font-size:.7em;
+	max-width:90%;
+	 
+	position:absolute;
+	bottom:2%;
+	right:2%;
+	
+	
+}
+/* bootstrap override 
+.modal-body { 
+    max-height: 350px; 
+    padding: 15px; 
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+ }*/

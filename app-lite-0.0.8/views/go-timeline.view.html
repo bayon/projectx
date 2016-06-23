@@ -1,0 +1,691 @@
+<div id="go_timeline_view" class=" animated fadeIn kioview" style="text-align:center;"  >
+	 <!-- container-fluid -->
+	 <div class="row top-row">
+		<div class="col-md-12  ">
+		<link rel='stylesheet' type='text/css' href='js/go-timeline/css/gotimeline.css'>
+		<script src="js/go-timeline/timeline_item.js"></script>
+		<script src="js/go-timeline/ajax.js"></script>
+		<script src="js/go-timeline/config.js"></script>
+		<div style="text-align:center;">
+		<h3>Go Timeline</h3>
+		 <!-- Trigger the modal with a button -->
+		 <!--- NOT WORKING: &c=timelineevent_controller&m=read  so call on init.... -->
+ 			<a href="?pg=go-timeline.admin.php&title=timeline admin">Timeline Admin</a>
+ 		</div>
+		<style>
+			#data_table th, td {
+				font-size: 12px;
+			}
+			.timeline_controls_table{
+				position:absolute;
+				top:2%;
+				left:1%;
+				z-index:999;
+				opacity:.8;
+			}
+		</style>
+
+		 <div style='display:none;'>
+		 		avg td width: <div id='td_avg'></div>
+			size_no: <div id='size_no'></div>
+		 </div>
+		 
+		 <table   class='direction_controls_table' width=100% border=0 >
+			<tr>
+				<td>
+				<button id="plus" class='timeline_control_button' onclick="goPrev();"  style="width:10%; float:left;">
+					prev
+				</button></td>
+				<td>
+				<button id="minus" class='timeline_control_button' style="width:10%; float:right;" onclick="goNext();">
+					next
+				</button></td>
+				
+			</tr>
+			 
+		</table>
+		 
+		 
+		 
+		<div class="anim_container"  >
+			<table   class='timeline_controls_table'>
+			<tr>
+				<td>
+				<button id="plus" class='timeline_control_button' onclick="increaseWidth();" >
+					+
+				</button></td>
+			</tr>
+			<tr>
+				<td>
+				<button id="minus" class='timeline_control_button' onclick="decreaseWidth();">
+					-
+				</button></td>
+			</tr>
+		</table>
+			<div id="timeline_object">
+
+			</div>
+
+		</div>
+		 
+		<script>
+			// hammer note: capture just one pan
+			var HammerScript = null;
+			var myElement = document.getElementById('timeline_object');
+			////console.log('DEFINE: HAMMER');
+			var mc = new Hammer.Manager(myElement);
+			var mc2 = new Hammer.Manager(myElement);
+			mc.add(new Hammer.Pan({
+				direction : Hammer.DIRECTION_HORIZONTAL,
+				threshold : 120,
+				pointers : 0
+			}));
+			mc2.add(new Hammer.Press({
+				time : 500,
+				threshold : 10,
+				pointers : 1
+			}));
+			mc2.on("press", function(ev) {
+				console.log('PRESS ');
+				//$('#timeline_object').draggable( "enable" );
+				/////////////////////////////////////////
+			});
+			mc2.on("pressup", function(ev) {
+				console.log('PRESS UP ');
+				//$('#timeline_object').draggable( "disable" );
+			});
+			mc.on("panend", function(ev) {
+				
+				console.log("RIGHT X:"+ x.right_most_x + " WIN W "+ WINDOW_WIDTH_PX );
+				console.log("screen width:"+  screen.width);
+				console.log("half win width:"+  WINDOW_WIDTH_PX/2);
+				
+				if (ev.direction == Hammer.DIRECTION_RIGHT) {
+					 
+					updateResize();
+					if (parseInt(x.x) < RIGHT_LIMIT_PRCNT) {
+						x.setMove("right");
+						moveObj(x);
+					}
+				} else if (ev.direction == Hammer.DIRECTION_LEFT) {
+					updateResize();
+					console.log("SCREEN_WIDTH="+SCREEN_WIDTH);
+					console.log("x.right_most_x ="+ x.right_most_x );
+					console.log( "parseInt(WINDOW_WIDTH_PX)= "+  WINDOW_WIDTH_PX);
+					console.log( "parseInt(WINDOW_WIDTH_PX/2)= "+  WINDOW_WIDTH_PX/2);
+					console.log(typeof x.right_most_x);
+					console.log(typeof parseInt(WINDOW_WIDTH_PX/2));
+					if(parseInt(x.right_most_x) >=  parseInt(WINDOW_WIDTH_PX/2) ){
+						if (   parseInt(x.right_most_x) >= parseInt(WINDOW_WIDTH_PX) ) {
+							x.setMove("left");
+							moveObj(x);
+							console.log('swiping left 1');
+						}else  if( parseInt(x.right_most_x) === parseInt(WINDOW_WIDTH_PX/2)){
+							x.setMove("left");
+							moveObj(x);
+							 
+							 console.log('swiping left 2');
+							//bounce back to left HERE  if(x.right_most_x < WINDOW_WIDTH/2)
+							
+							
+							
+	 					}else{
+	 						console.log(parseInt(x.right_most_x) +" AND "+ parseInt(WINDOW_WIDTH_PX));
+	 						console.log("MEGA WTF!");
+							console.log('MEGA still not swiping left WHY?');
+	 					}
+					}else  {
+							console.log('not swiping left WHY?');
+	 					}
+					
+				}
+				//$('#timeline_object').draggable( "disable" );
+			});
+			 
+		</script>
+
+		<script>
+		
+		var data = null;
+			var TimelineScript = null;
+			////console.log('DEFINE: properties');
+			var DATA_COUNT = 75;
+			var SCREEN_WIDTH = null;
+			var WINDOW_WIDTH_PX = null;
+			
+			var TIMELINE_WIDTH_PX = null;
+			var TIMELINE_X_PX = '0px';
+			var TIMELINE_X_PRCNT = null;
+			var OBJX = '0%';
+			var DUR = 500;
+			var SWIPE_CHANGE_PRCNT = 50;
+			var RIGHT_LIMIT_PRCNT = 5;
+			var LEFT_LIMIT_PRCNT = 1;
+			var TD_WIDTH_PRCNT = 3;
+			var TD_WIDTH_MIN_PRCNT = 1;
+			var TD_WIDTH_MAX_PRCNT = 10;
+			var TD_DELTA_PRCNT = 3;
+			var TD_DELTA_TIME = 1000;
+			var obj = null;
+			var x = {};
+			x.id = "timeline_object";
+			x.del = '0';
+			x.dir = null;
+			x.a = '1';
+			x.dur = DUR;
+			x.e = 'easeOutQuint';//easeInOutQuint
+			x.x_change = SWIPE_CHANGE_PRCNT;
+			x.x_current = 0;
+			x.x = x.x_current + "%";
+			x.html = null;
+			x.y = '0%';
+
+			x.current_td_w = parseInt(200 / DATA_COUNT);
+			;
+			x.timeline_td_w = x.current_td_w + '%';
+
+			x.current_w = 100;
+
+			x.w = x.current_w + '%';
+			x.right_most_x = null;
+			x.h = '100%';
+			x.dx_current = 0;
+			x.dx = x.dx_current + '%';
+			x.dy = '0%';
+			x.dw = '100%';
+			x.dh = '100%';
+			x.da = '1';
+			x.setMove = function(dir) {
+				if (dir == "left") {
+					x.dir = dir;
+					x.dx_calc = parseInt(parseInt(x.dx_current) - parseInt(x.x_change));
+				} else if (dir == "right") {
+					x.dir = dir;
+					x.dx_calc = parseInt(parseInt(x.dx_current) + parseInt(x.x_change));
+				}
+
+				x.x = x.dx_calc;
+				x.dx = x.dx_calc + '%';
+				x.dx_current = x.dx_calc;
+			};
+
+			x.setHTML = function(html) {
+				x.html = html;
+				$('#' + x.id).html(x.html);
+			};
+
+			function callback_animationObject(obj) {
+				////console.log('fn:callback_animationObject(obj)');
+				setRightX();
+
+			}
+
+			function moveObj(obj) {
+				////console.log('fn:moveObj(obj)');
+				if (obj.dir == "right") {
+					$('#' + obj.id).animate({
+						left : obj.dx,
+						easing : obj.e
+					}, obj.dur, callback_animationObject(obj));
+					completeMove(obj);
+
+				} else if (obj.dir == "left") {
+
+					$('#' + obj.id).animate({
+						left : obj.dx,
+						easing : obj.e
+					}, obj.dur, callback_animationObject(obj));
+					completeMove(obj);
+				}
+			}
+
+			function completeMove(obj) {
+				////console.log('fn: completeMove(obj)');
+				var position = $("#timeline_object").offset();
+				TIMELINE_X_PX = position.left;
+				 
+				TIMELINE_WIDTH_PX = $("#timeline_object").width();
+				OBJX = obj.x;
+				 
+				var TIMELINE_X_PRCNT = pxToPercent(TIMELINE_X_PX, TIMELINE_WIDTH_PX);
+				x.x_current = obj.x;
+				positionCorrectionCheck(obj);
+				  // $( "#timeline_object" ).draggable('disable');
+				   
+				  
+				
+				
+			}
+			
+			function positionCorrectionCheck(obj){
+				console.log('DIRECTION:');
+				console.log('x.dir ='+ x.dir);
+				console.log('obj.dir ='+ obj.dir);
+				 //if(obj.dir == "right"){
+					if(x.x_current >= 50){
+						console.log('return to home position');
+						obj.dir = "left";
+						obj.x = 0;
+						obj.x_current = 0;
+						obj.dx_current = 0;
+						obj.dx = 0;
+						console.log(obj);
+						//http://localhost:8888/00_research/00_research/timelineGo/timelineGo.html
+						moveObj(obj);
+					}
+				//}
+				/*
+				 console.log("DETAILS AFTER MOVE:" + x.x_current); 
+				  console.log("x.x_current:" + x.x_current); 
+				   console.log("x.dx_current:" + x.dx_current); 
+				  
+				    console.log("obj.x_current:" + obj.x_current); 
+				     console.log("obj.dx_current:" + obj.dx_current); 
+				      console.log("parseInt(x.right_most_x) :" + parseInt(x.right_most_x) ); 
+				      */
+				  if(obj.dir == "left"){
+				  	 if(parseInt(x.right_most_x) <= parseInt(WINDOW_WIDTH_PX/2)){
+					 	console.log('BOUNCE BACK ALREADY');
+					 	 console.log('return to last position');
+						obj.dir = "right";
+						obj.x = 0;
+						obj.x_current = 0;
+						obj.dx_current = 0;
+						obj.dx = 0;
+						console.log(obj);
+						//http://localhost:8888/00_research/00_research/timelineGo/timelineGo.html
+						moveObj(obj);
+					 }  
+				  }  
+				  rwdAjdustments(size_no);
+			}
+  
+			var size_no = 1;
+			 
+			function updateResize() {
+				////console.log('fn: updateResize()');
+				setRightX();
+			}
+
+			function increaseWidth() {
+				////console.log('fn:increaseWidth()');
+				size_no++;
+				switch(size_no) {
+				    case 2:
+				        width="200%";
+				        current_w = 200;
+				        break;
+				    case 3:
+				         width="400%";
+				        current_w = 400;
+				        break;
+				    case 4:
+				         width="1200%";
+				        current_w = 1200;
+				        break;
+				    case 5:
+				         width="2400%";
+				        current_w = 2400;
+				        break;
+				    default:
+				        //default code block
+				}
+				$('#timeline_object').animate({
+						width : width
+					}, TD_DELTA_TIME, updateResize);
+					x.current_w = current_w;
+				//size limit
+				if(size_no > 5){ size_no = 5; }				
+				/////
+				rwdAjdustments(size_no);
+			}
+
+			function decreaseWidth() {
+				////console.log('fn:decreaseWidth()');
+				size_no--;
+				 
+				switch(size_no) {
+				    case 1:
+				        width="100%";
+				        current_w = 100;
+				        break;
+				    case 2:
+				         width="200%";
+				        current_w = 200;
+				        break;
+				    case 3:
+				         width="400%";
+				        current_w = 400;
+				        break;
+				    case 4:
+				         width="1200%";
+				        current_w = 1200;
+				        break;
+				    case 5:
+				         width="2400%";
+				        current_w = 2400;
+				        break;
+				    default:
+				        //default code block
+				}
+				$('#timeline_object').animate({
+						width : width
+					}, TD_DELTA_TIME, updateResize);
+					x.current_w = current_w;
+				//size limit
+				if(size_no < 1){ size_no = 1; }
+				setRightX();
+				rwdAjdustments(size_no);
+			}
+
+			function setRightX() {
+				////console.log('fn: setRightX()');
+				WINDOW_WIDTH_PX = parseInt($(window).width());
+				var position = $("#timeline_object").offset();
+				var left_x = position.left;
+				var obj_w = $("#timeline_object").width();
+				var right_x = left_x + obj_w;
+				x.right_most_x = right_x;
+			}
+			
+			function rwdAjdustments(size_no){
+				var rwd_delta = 500;
+				console.log('fn: rwdAjdustments(size_no)'+size_no);
+				var fontsize_event_name = "1em";
+				var fontsize_event_description = "1em";
+				var dim_event_img = 50;
+				var img_visible = false;
+				var desc_visible = false;
+				var event_name_visible = false;
+				//event_btn
+				var event_btn_visible = false;
+				switch(size_no) {
+				    case 1:
+				       fontsize_event_name = "0.5em" ;
+				        fontsize_event_description = "0.5em";
+				         img_visible = false;
+				         desc_visible = false;
+				         event_name_visible = false;
+				         event_btn_visible = true;
+				         
+				        //dim_event_img = 20;
+				        break;
+				    case 2:
+				         fontsize_event_name = "0.7em" ;
+				         fontsize_event_description = "0.7em" ;
+				         //dim_event_img = 20;
+				         event_name_visible = true;
+				         img_visible = false;
+				         desc_visible = false;
+				         event_btn_visible = true;
+				        break;
+				    case 3:
+				         fontsize_event_name = "1em" ;
+				         fontsize_event_description = "1em" ;
+				        // dim_event_img = 50;
+				         event_name_visible = true;
+				         desc_visible = true;
+				          img_visible = false;
+				           event_btn_visible = true;
+				        break;
+				     case 4:
+				         fontsize_event_name = "1.3em" ;
+				         fontsize_event_description = "1.3em" ;
+				        // dim_event_img = 50;
+				         event_name_visible = true;
+				         img_visible = true;
+				         desc_visible = true;
+				         event_btn_visible = true;
+				        break;
+				   	 case 5:
+				         fontsize_event_name = "1.5em" ;
+				         fontsize_event_description = "1.5em" ;
+				        // dim_event_img = 50;
+				         event_name_visible = true;
+				         img_visible = true;
+				         desc_visible = true;
+				         event_btn_visible = true;
+				        break;
+				    default:
+				        //default code block
+				}
+				if(size_no <=2 ){
+					 $('.event_btn').animate({ width : '10px' }, rwd_delta);
+					 $('.event_btn').animate({ right : '25%' }, rwd_delta);
+				}else{
+					$('.event_btn').animate({ width : '100%' }, rwd_delta);
+					$('.event_btn').animate({ right : '2%' }, rwd_delta);
+				}
+				// $(".event_name").css('fontSize',fontsize_event_name);
+				 $('.event_name').animate({ fontSize : fontsize_event_name }, rwd_delta);
+				 $('.event_description').animate({ fontSize : fontsize_event_description }, rwd_delta);
+				 //$(".event_description").css('fontSize',fontsize_event_description);
+				// var final_dim = dim_event_img+"px";
+				 // $(".event_img").css('width',final_dim);
+				  //$(".event_img").css('height',final_dim);
+				  if(img_visible){
+				  	 //$(".event_img").css('opacity','1');
+				  	  $('.event_img').animate({ opacity : '1' }, rwd_delta);
+				  }else{
+				  	 //$(".event_img").css('opacity','0');
+				  	  $('.event_img').animate({ opacity : '0' }, rwd_delta);
+				  }
+				  if(desc_visible){
+				  	 
+				  	  $('.event_description').animate({ opacity : '1' }, rwd_delta);
+				  }else{
+				  	 
+				  	  $('.event_description').animate({ opacity : '0' }, rwd_delta);
+				  }
+				  if(event_name_visible){
+				  	 
+				  	  $('.event_name').animate({ opacity : '1' }, rwd_delta);
+				  }else{
+				  	 
+				  	  $('.event_name').animate({ opacity : '0' }, rwd_delta);
+				  }
+				   if(event_btn_visible){
+				  	 
+				  	  $('.event_btn').animate({ opacity : '1' }, rwd_delta);
+				  }else{
+				  	 
+				  	  $('.event_btn').animate({ opacity : '0' }, rwd_delta);
+				  }
+				  
+				  var avg_td = $("#timeline_object td").width();
+				  $("#td_avg").html(avg_td);
+				  $("#size_no").html(size_no);
+				  
+				  
+				  //////////////check if event on screen   isScrolledIntoView(elem)
+				  //console.log(isScrolledIntoView('event_id_8'));
+				  /* ONLY WORKS ON FIRST VISIBLE SCREEN ....requires the js file.
+				   console.log('Events Visible Check:');
+ 					for(var q = 1; q < 8;q++){
+ 						var name = 'event_id_'+q;
+ 						var my_element = document.getElementById(name);
+ 						console.log(name + "---"+ my_element.isVisible(my_element));
+ 					}
+ 					*/
+				 
+			}
+
+			function pxToPercent(p, w) {
+				////console.log('fn:pxToPercent(p, w)');
+				var result = (p / w * 100);
+				return result.toFixed(0);
+			}
+
+			function getEventData(obj){
+ 				var myHtml = obj.event_html();
+ 				return myHtml;
+			}
+			function getDateInfo(obj){
+ 				var myHtml = obj.date_html();
+ 				return myHtml;
+			}
+			///////////////////////////////////////////////////////////////////////////////
+			function getTimeDimensionData_callback(json){
+				var obj = JSON.parse(json);
+				//console.log(obj);
+				console.log('DAYS:');
+				console.log(obj.days);
+				console.log('Events:');
+				console.log(obj.events);
+				
+				buildTimelineDimension(obj);
+			}
+			//////////////////////////////////////////////////////
+			function getTimeDimensionData(){
+ 				var dataString = 'c=time_dimension_controller&m=readJSON';
+ 				//alert(JS_CONFIG.BASE_URL+'server.php?'+dataString);
+				console.log(JS_CONFIG.BASE_URL+'js/go-timeline/server.php?'+dataString);
+				ajax_datastring_URL_callback(dataString, JS_CONFIG.BASE_URL+'js/go-timeline/server.php', getTimeDimensionData_callback);
+			}
+			
+			function buildTimelineDimension(data){
+				var i_days = data.days.length;
+				console.log('number of days:'+ i_days);
+				var i_events = data.events.length;
+				console.log('number of events:'+ i_events);
+				//START TABLE
+				var html = "<table border=0 id='timeline_table'  cellpadding='0' cellspacing='0' width=100%   >";
+				html += "<tr class='event_row'>";
+				for (var i = 0; i < i_days; i++) {
+ 					var equal = false;
+ 					for(var j=0;j < i_events; j++){
+ 						var val = data.events[j].date_timestamp;
+ 						//MAKE SURE FORMATTED THE SAME
+ 						var ar = val.split(" 00:00:00");
+ 						if(ar[0] == data.days[i].db_date){
+ 							equal = true;
+ 							var o = data.events[j];
+ 							//js/go-timeline/
+ 							var obj_now =  makeTimelineItem(o.id,o.event_name,"js/go-timeline/img/"+o.event_img,o.event_description,o.date_timestamp );
+  							html += "<td class='timeline_td' > <div class='timeline_data'>"   +getEventData(obj_now)+ "</div> </td>";
+  						} 
+ 					}
+ 					if(!equal){
+  						html += "<td class='timeline_td' > <div class='timeline_data'></div> </td>";
+ 					}
+ 				}
+				html += "</tr>";
+	
+				html += "<tr class='tick_row'>";
+				for (var i = 0; i < i_days; i++) {
+					html += "<td class='timeline_td' ><div class='go_tick'  >|</div>   </td>";
+				}
+				html += "</tr>";
+	
+				html += "<tr class='date_row'>";
+				for (var i = 0; i < i_days; i++) {
+					if(typeof data.days[i].db_date != "undefined"){
+						html += "<td class='timeline_td' ><div class='go_date' >"  + data.days[i].db_date+ "</div>   </td>";
+					}else{
+						html += "<td class='timeline_td' ><div class='go_date' >"  + data.days[i].year+ "</div>   </td>";
+					}
+ 						
+ 				}
+				html += "</tr>";
+	
+				html += "</table>";
+				//END TABLE
+	
+				x.setHTML(html);
+				rwdAjdustments(size_no);
+			}
+
+			 function goPrev(){
+			 	x.setMove("right");
+						moveObj(x);
+			 }
+			  function goNext(){
+			 	x.setMove("left");
+						moveObj(x);
+			 }
+			 // L E F T   O F F   H E R E  
+				//thinking about the RWD of the timeline elements
+				//whether adding draggable  to the swipe elements might make even more responsive?
+				// 
+			// === INIT =============================================
+			function initGoTimeline() {
+				console.log('fn:initGoTimeline()');
+				SCREEN_WIDTH = screen.width;
+				WINDOW_WIDTH_PX = parseInt($(window).width());
+				size_no = 1;
+				
+				setRightX();
+				$("#timeline_object").css('width', x.w);
+				
+				getTimeDimensionData();
+				 
+			}
+			 // DRAGGING FUNCTIONALITY: development
+			 /*
+			 $(function() {
+			   // $( "#timeline_object" ).draggable({ axis: "x" });
+			 var start = null;
+			 var stop = null;
+			  $( "#timeline_object" ).draggable({ axis: "x" }, {
+			      start: function() {
+			         
+			        console.log('START !!!');
+			        var offset = $(this).offset();
+			        console.log(offset);
+			        start = offset.left;
+			        console.log(start);
+			         
+			      },
+			      drag: function() {
+			        
+			      },
+			      stop: function() {
+ 			        var this_obj = $(this);
+			        console.log('STOP !!!');
+			        
+			        var offset2 = $(this).offset();
+			        console.log(offset2);
+			        stop = offset2.left;
+			        console.log(stop);
+ 			        console.log('compare:');
+			        console.log(start);
+			        console.log('and');
+			        console.log(stop);
+			        if(start >= stop){
+			        	 x.setMove("left");
+			        	 this_obj.dir = "left";
+			        }else{
+			        	 x.setMove("right");
+			        	 this_obj.dir = "right";
+			        }
+			       
+					//moveObj(x);
+					 console.log("STOP DETAILS:");
+				 console.log("SCREEN_WIDTH="+SCREEN_WIDTH);
+					console.log("x.right_most_x ="+ x.right_most_x );
+					console.log( "parseInt(WINDOW_WIDTH_PX)= "+  WINDOW_WIDTH_PX);
+					console.log( "parseInt(WINDOW_WIDTH_PX/2)= "+  WINDOW_WIDTH_PX/2);
+					 console.log("this_obj.dir="+this_obj.dir);
+					
+					//positionCorrectionCheck(this_obj);
+					
+			      }
+			    });
+			     $( "#timeline_object" ).draggable('disable');// keep disabled until hammer js PRESS event
+			 
+			  });
+			   */
+			  
+		</script>
+		
+  		 <script>
+  		 	$(document).ready(function(){
+  		 		initGoTimeline();
+  		 	});
+  		 </script>
+ 
+  </div>
+  </div>
+  </div>
+  
+

@@ -1,0 +1,59 @@
+<style>
+	#myHammerExample {
+  background: silver;
+  height: 100px;
+  text-align: center;
+  font: 30px/300px Helvetica, Arial, sans-serif;
+}
+</style>
+<div id="template_view_1" class="container-fluid animated fadeIn kioview" style="text-align:center;"  >
+	 
+	 <div class="row top-row">
+		<div class="col-md-12">
+			<h3>four: gesture recognition</h3>
+			
+		 
+				 
+					<p>try panning left or right with a swipe on this silve box.</p>
+					 <div id="myHammerExample"> </div>
+				 
+			</div>
+			 
+		</div>
+	 
+</div>
+<!-- BACKGROUND IMAGES -->
+<div id="BG_IMG">
+	&nbsp;
+	<!-- <img src="img/sky.jpg"> -->
+</div>
+<div id="BG_IMG_LEFT">
+	&nbsp;
+</div>
+<div id="BG_IMG_RIGHT">
+	&nbsp;
+</div>
+<div id="BG_IMG_TOP">
+	&nbsp;
+</div>
+<!-- end of BACKGROUND IMAGES -->
+<script>
+	( function() {
+			$('#BG_IMG').addClass('gradient6');//be sure to remove unwanted classes before applying a new one.
+		}()); 
+		var myElement = document.getElementById('myHammerExample');
+
+		// create a simple instance
+		// by default, it only adds horizontal recognizers
+		var mc = new Hammer(myElement);
+		
+		// listen to events...
+		mc.on("panleft panright tap press", function(ev) {
+		   
+		    if(ev.type =="panleft"){
+		    	 myElement.textContent = ev.type +" gesture detected.";
+		    }else if(ev.type =="panright"){
+		    	 myElement.textContent = ev.type +" gesture detected.";
+		    }
+		});
+</script>

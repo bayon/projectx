@@ -1,0 +1,184 @@
+ <style>
+			/* 
+			* {
+				box-sizing: border-box;
+				-moz-box-sizing: border-box;
+			}
+*/
+			html, body {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				overflow:hidden;
+			}
+
+			body {
+				overflow-x: hidden;
+				 /*background-color:#ffffff;*/
+				 
+				 
+			}
+
+			 
+
+			section {
+				position: relative;
+				overflow: hidden;
+				padding: 50px;
+				width: 100%;
+				/*height: 100%;*/
+				min-height:600px;
+				/*background: #1abc9c;*/
+			}
+
+			 
+ 
+		 
+
+			 
+
+			img {
+				max-width: 100%;
+			}
+
+			 
+			.panels, .log, .menu, pre {
+				position: absolute;
+				top: 0px;
+				bottom: 0px;
+				right: 0px;
+				left: 0px;
+				/*overflow: scroll;
+				overflow:auto;*/
+				overflow:hidden;
+			}
+ 
+			 
+		</style>
+<section id="myElement" class="button_demo">
+
+			<div class="panels">
+				<section  id="section_1">
+					</br></br><h1>First</h1>
+				</section>
+				<section id="section_2">
+					</br></br><h1>Second</h1>
+				</section>
+				<section id="section_3">
+					</br></br><h1>Third</h1>
+				</section>
+				<section id="section_4">
+					</br></br><h1>Fourth</h1>
+				</section>
+				<section id="section_5">
+					</br></br><h1>Fifth</h1>
+				</section>
+			</div>
+			<div   style="opacity:0;width:1px;max-width:1px;">
+				<nav>
+					<a class="button prev">Previous</a>
+					<a class="button next">Next</a>
+				</nav>
+			</div>
+		</section>
+
+ 		 
+		<script>
+			jQuery(function($) {
+
+				// Basic demo
+
+				$('body').panelSnap();
+				//disable at first till can be affected by gestures.
+				//$('body').panelSnap('disable');
+
+				// Button demo
+				$('.button_demo .panels').panelSnap({
+					navigation : {
+						buttons : {
+							$nextButton : $('.button.next'),
+							$prevButton : $('.button.prev'),
+						}
+					}
+				});
+
+			});
+			var myElement = document.getElementById('myElement');
+			var mc = new Hammer(myElement);
+
+			 
+
+			mc.on("panleft panright tap press", function(ev) {
+				//myElement.textContent = ev.type + " gesture detected.";
+			});
+			 
+			mc.get('pan').set({
+				direction : Hammer.DIRECTION_ALL
+			});
+
+			 //mc.on("panleft panright panup pandown tap press", function(ev) {
+			mc.on("panleft panright panup pandown tap press", function(ev) {
+				
+				if(ev.type == "pandown"){
+					//myElement.textContent = ev.type + " gesture detected.";
+					$('.button.prev').click();
+				}else if(ev.type == "panup"){
+					//myElement.textContent = ev.type + " gesture detected.";
+					$('.button.next').click();
+				}
+			});
+			
+			$(document).ready(function() {
+						
+						//$("#section_3").focus(function(){
+							//NOPE: $("#section_1").load("views/template-1.html");
+						//});
+						$("#section_1").load("views/template-1.html");
+						$("#section_2").load("views/template-2.html");
+						$("#section_3").load("views/template-3.html");
+						$("#section_4").load("views/template-4.html");
+						$("#section_5").load("views/template-5.html");
+						
+						 
+			});
+			
+			
+		
+		</script>
+		<script>
+		/* Attempt: to page page full height.*/
+			var win_h =  $(window).height();   // returns height of browser viewport 
+		var doc_h =  $(document).height(); // returns height of HTML document
+		$(window).width();   // returns width of browser viewport
+		$(document).width(); // returns width of HTML document
+		$("html").css('height',win_h);
+		$("body").css('height',win_h);
+		$("#page_content").css('height',win_h);
+		$("section").css('height',win_h);
+		$(".panels").css('height',win_h);
+		$("#BG_IMG_LEFT").css('height',win_h);
+		</script>
+		
+		
+		
+<!-- BACKGROUND IMAGES -->
+<div id="BG_IMG">
+	&nbsp;
+	<!-- <img src="img/sky.jpg"> -->
+</div>
+<div id="BG_IMG_LEFT">
+	&nbsp;
+</div>
+<div id="BG_IMG_RIGHT">
+	&nbsp;
+</div>
+<div id="BG_IMG_TOP">
+	&nbsp;
+</div>
+<!-- end of BACKGROUND IMAGES -->
+<script>
+	( function() {
+			$('#BG_IMG').addClass('gradient6');//be sure to remove unwanted classes before applying a new one.
+		}()); 
+		 
+</script>
