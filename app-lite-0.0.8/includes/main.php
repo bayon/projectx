@@ -24,3 +24,5 @@ require_once "includes/controllers/banana.controller.php";
 require_once "includes/models/banana.model.php";
 require_once "includes/controllers/canalope.controller.php";
 require_once "includes/models/canalope.model.php";
+require_once "includes/controllers/monkey.controller.php";
+require_once "includes/models/monkey.model.php";

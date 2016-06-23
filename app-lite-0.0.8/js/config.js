@@ -3,7 +3,7 @@ if ( typeof JS_CONFIG == "undefined") {
 }
 JS_CONFIG.DEV = 1;
 //HOME: 
-JS_CONFIG.ROOT_DIR = "/app-lite-0.0.8/";
+JS_CONFIG.ROOT_DIR = "/callz/projectx/app-lite-0.0.8/";
 //STORY AVE: JS_CONFIG.ROOT_DIR = "/app-lite-0.0.5/";
 //JS_CONFIG.ROOT_DIR = "/app-lite//app-lite-0.0.7/";
 JS_CONFIG.PATH_ARRAY = window.location.pathname.split('/');

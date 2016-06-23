@@ -3,7 +3,7 @@
 /*-----	AUTOMATED CONFIGS	 ---------------------------------*/
 /*============================================================*/
 //HOME: 
-$site_root ="app-lite/app-lite-0.0.8";
+$site_root ="twilio/callz/projectx/app-lite-0.0.8";
 //STORY AVE: $site_root ="00_research/app-lite/app-lite-0.0.6";
 //$site_root ="00_research/app-lite/app-lite-0.0.7";
 define('BASE_PATH', realpath(dirname(__FILE__)));
